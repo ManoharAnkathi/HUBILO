@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+        integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="/css/rating.css">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.13.0/mapbox-gl.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-md bg-body-light border-bottom sticky-top">
+    <div class="container-fluid">
+        <i class="fa-solid fa-compass"></i>
+        <div class="navbar-nav">
+           <b>HUBILO</b> 
+        </div>
+        <div class="navbar-nav ms-auto">
+            <% if(currUser) { %>
+                <a class="nav-link" href="/owner/dashboard"><b>Back</b></a>
+                <a class="nav-link" href="/"><b>Logout</b></a>
+            <% } %>
+        </div>
+        </div>
+    </div>
+    </nav>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.13.0/mapbox-gl.js"></script>
+    <div class="container">
+        <%- include("../includes/flash.ejs") %>
+
+        <div class="row mt-3">
+            <div class="col-8 offset-2">
+                <form method="post" action="/listings" enctype="multipart/form-data" class="needs-validation"
+                    novalidate>
+                    <h4>Add New Listing</h4>
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input name="listing[title]" type="text" class="form-control" placeholder="enter title"
+                            required>
+                        <div class="invalid-feedback">Title is required.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select name="listing[category]" class="form-control" required>
+                            <option value="" disabled selected>Select a category</option>
+                            <option value="castle">Castle</option>
+                            <option value="pool">Pool</option>
+                            <option value="camp">Camp</option>
+                            <option value="farm">Farm</option>
+                            <option value="stand">Stand</option>
+                            <option value="garage">Garage</option>
+                            <option value="hotel">Hotel</option>
+                            <option value="museum">Museum</option>
+                            <option value="beach">Beach</option>
+                            <option value="cabin">Cabin</option>
+                            <option value="villa">Villa</option>
+                            <option value="apartment">Apartment</option>
+                            <option value="resort">Resort</option>
+                            <option value="bungalow">Bungalow</option>
+                            <option value="chalet">Chalet</option>
+                            <option value="lodge">Lodge</option>
+                            <option value="tent">Tent</option>
+                            <option value="yurt">Yurt</option>
+                        </select>
+                        <div class="invalid-feedback">Category is required.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea name="listing[description]" class="form-control" placeholder="enter description"
+                            required></textarea>
+                        <div class="invalid-feedback">description must be not empty.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Upload Image</label>
+                        <input name="listing[image]" type="file" class="form-control" required>
+                        <div class="invalid-feedback">share listing document</div>
+                    </div>
+                    <div class="row">
+                        <div class="mb-3 col-md-4">
+                            <label for="price" class="form-label">Price</label>
+                            <input name="listing[price]" type="text" class="form-control" placeholder="enter price"
+                                required>
+                            <div class="invalid-feedback">price is required</div>
+                        </div>
+                        <div class="mb-3 col-md-8">
+                            <label for="country" class="form-label">Country</label>
+                            <input name="listing[country]" type="text" class="form-control" placeholder="enter country"
+                                required>
+                            <div class="invalid-feedback">country name is required</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Location</label>
+                        <input name="listing[location]" type="text" class="form-control" placeholder="enter location"
+                            required>
+                        <div class="invalid-feedback">location is required</div>
+                    </div>
+                    <button type="submit" class="btn btn-dark add-btn">Add</button>
+                    <br><br>
+                </form>
+            </div>
+        </div>
+    </div>
+    <%- include("../includes/footer.ejs") %>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <script src="/js/script.js"></script>
+</body>
+</html>
+
+
+
+
+   

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title || 'Hubilo' %></title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+        integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="/css/rating.css">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.13.0/mapbox-gl.css" rel="stylesheet">
+    <style>
+        .stat-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .counter {
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        .revenue-amount {
+            font-size: 2.5rem;
+        }
+        .badge-pending { background-color: #ffc107; }
+        .badge-confirmed { background-color: #28a745; }
+        .badge-cancelled { background-color: #dc3545; }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-md bg-body-light border-bottom sticky-top">
+        <div class="container-fluid">
+            <i class="fa-solid fa-compass"></i>
+            <div class="navbar-nav">
+               <b>HUBILO</b> 
+            </div>
+            <div class="navbar-nav ms-auto">
+                <% if(currUser) { %>
+                    <a class="nav-link" href="/"><b>Logout</b></a>
+                <% } %>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <%- include("../includes/flash.ejs") %>
+            <div class="container mt-4">
+                <div class="row">
+                    <div class="col-md-3">
+                        <!-- Sidebar -->
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Owner Dashboard</h5>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <a href="/owner/profile/<%= owner._id %>" class="text-decoration-none">
+                                            <i class="fas fa-user me-2"></i>Profile
+                                        </a>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <a href="/owner/listings/<%= owner._id %>" class="text-decoration-none">
+                                            <i class="fas fa-home me-2"></i>My Listings
+                                        </a>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <a href="/owner/bookings/<%= owner._id %>" class="text-decoration-none">
+                                            <i class="fas fa-calendar me-2"></i>Bookings
+                                        </a>
+                                    </li>
+                                    <li class="list-group-item active">
+                                        <a href="/owner/dashboard/<%= owner._id %>" class="text-decoration-none text-white">
+                                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Stats Summary -->
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <h6 class="card-title">Quick Stats</h6>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Listings:</span>
+                                    <span class="badge bg-primary"><%= activeListingsCount %></span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Bookings:</span>
+                                    <span class="badge bg-success"><%= totalBookingsCount %></span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>Revenue:</span>
+                                    <span class="badge bg-warning">₹<%= totalRevenue.toLocaleString('en-IN') %></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-9">
+                        <!-- Main Content -->
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h4 class="mb-0">Welcome, <%= owner.businessName %></h4>
+                                <small class="text-light">Last updated: <%= new Date().toLocaleString() %></small>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <!-- Active Listings Card -->
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card text-center stat-card border-primary">
+                                            <div class="card-body">
+                                                <i class="fas fa-home fa-2x text-primary mb-3"></i>
+                                                <h1 class="display-4 counter" id="activeListingsCounter">
+                                                    <%= activeListingsCount %>
+                                                </h1>
+                                                <p class="card-text">Active Listings</p>
+                                                <small class="text-muted">Updated in real-time</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Total Bookings Card -->
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card text-center stat-card border-success">
+                                            <div class="card-body">
+                                                <i class="fas fa-calendar-check fa-2x text-success mb-3"></i>
+                                                <h1 class="display-4 counter" id="bookingsCounter">
+                                                    <%= totalBookingsCount %>
+                                                </h1>
+                                                <p class="card-text">Total Bookings</p>
+                                                <small class="text-muted">All bookings from your listings</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Total Revenue Card -->
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card text-center stat-card border-warning">
+                                            <div class="card-body">
+                                                <i class="fas fa-rupee-sign fa-2x text-warning mb-3"></i>
+                                                <h1 class="display-4 counter revenue-amount" id="revenueCounter">
+                                                    ₹<%= totalRevenue.toLocaleString('en-IN') %>
+                                                </h1>
+                                                <p class="card-text">Total Revenue</p>
+                                                <small class="text-muted">From confirmed bookings only</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Recent Bookings Section -->
+                                <% if (recentBookings && recentBookings.length > 0) { %>
+                                <div class="mt-5">
+                                    <h5><i class="fas fa-history me-2"></i>Recent Bookings</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Booking ID</th>
+                                                    <th>Listing</th>
+                                                    <th>Customer</th>
+                                                    <th>Check-in</th>
+                                                    <th>Amount</th>
+                                                    <th>Status</th>
+                                                    <th>Date</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% recentBookings.forEach(booking => { %>
+                                                <tr>
+                                                    <td><small>#<%= booking._id.toString().slice(-6).toUpperCase() %></small></td>
+                                                    <td>
+                                                        <% if (booking.listing && booking.listing.title) { %>
+                                                            <%= booking.listing.title.length > 20 ? booking.listing.title.substring(0, 20) + '...' : booking.listing.title %>
+                                                        <% } else { %>
+                                                            <em>Listing not found</em>
+                                                        <% } %>
+                                                    </td>
+                                                    <td>
+                                                        <% if (booking.userInfo && booking.userInfo.name) { %>
+                                                            <%= booking.userInfo.name %>
+                                                        <% } else if (booking.user && booking.user.username) { %>
+                                                            <%= booking.user.username %>
+                                                        <% } else { %>
+                                                            <em>Guest</em>
+                                                        <% } %>
+                                                    </td>
+                                                    <td><%= booking.checkIn ? new Date(booking.checkIn).toLocaleDateString() : 'N/A' %></td>
+                                                    <td><strong>₹<%= booking.totalPrice.toLocaleString('en-IN') %></strong></td>
+                                                    <td>
+                                                        <span class="badge badge-<%= booking.status %>">
+                                                            <%= booking.status.charAt(0).toUpperCase() + booking.status.slice(1) %>
+                                                        </span>
+                                                    </td>
+                                                    <td><small><%= booking.createdAt ? new Date(booking.createdAt).toLocaleDateString() : '' %></small></td>
+                                                </tr>
+                                                <% }) %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <% } else { %>
+                                <div class="mt-5 text-center py-4">
+                                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                                    <h5>No Recent Bookings</h5>
+                                    <p class="text-muted">Your listings don't have any bookings yet.</p>
+                                </div>
+                                <% } %>
+                                
+                                <!-- Quick Actions -->
+                                <div class="mt-5 pt-4 border-top">
+                                    <h5><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                                    <div class="d-grid gap-2 d-md-block mt-3">
+                                        <a href="/listings/new?owner=<%= owner._id %>" class="btn btn-success me-2">
+                                            <i class="fas fa-plus me-1"></i>Add New Listing
+                                        </a>
+                                        <% if (activeListingsCount > 0) { %>
+                                        <a href="/owner/listings/<%= owner._id %>" class="btn btn-primary me-2">
+                                            <i class="fas fa-eye me-1"></i>Manage Listings (<%= activeListingsCount %>)
+                                        </a>
+                                        <% } %>
+                                        <% if (totalBookingsCount > 0) { %>
+                                        <a href="/owner/bookings/<%= owner._id %>" class="btn btn-info">
+                                            <i class="fas fa-calendar-check me-1"></i>View Bookings (<%= totalBookingsCount %>)
+                                        </a>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+    <%- include("../includes/footer.ejs") %>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.13.0/mapbox-gl.js"></script>
+    <script src="/js/script.js"></script>
+    
+    <!-- Dashboard-specific JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add CSS for status badges
+            const style = document.createElement('style');
+            style.textContent = `
+                .badge-pending { background-color: #ffc107; color: #000; }
+                .badge-confirmed { background-color: #28a745; color: #fff; }
+                .badge-cancelled { background-color: #dc3545; color: #fff; }
+            `;
+            document.head.appendChild(style);
+            
+            // Counter animation function
+            function animateCounter(element, target, prefix = '', duration = 1000) {
+                const start = 0;
+                const increment = target / (duration / 16); // 60fps
+                let current = start;
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        element.textContent = prefix + target.toLocaleString('en-IN');
+                        clearInterval(timer);
+                    } else {
+                        element.textContent = prefix + Math.floor(current).toLocaleString('en-IN');
+                    }
+                }, 16);
+            }
+            
+            // Animate counters
+            const listingsCounter = document.getElementById('activeListingsCounter');
+            const bookingsCounter = document.getElementById('bookingsCounter');
+            const revenueCounter = document.getElementById('revenueCounter');
+            
+            if (listingsCounter) {
+                const listingsCount = parseInt(listingsCounter.textContent) || 0;
+                listingsCounter.textContent = '0';
+                animateCounter(listingsCounter, listingsCount);
+            }
+            
+            if (bookingsCounter) {
+                const bookingsCount = parseInt(bookingsCounter.textContent) || 0;
+                bookingsCounter.textContent = '0';
+                animateCounter(bookingsCounter, bookingsCount);
+            }
+            
+            if (revenueCounter) {
+                const revenueText = revenueCounter.textContent.replace('₹', '').replace(/,/g, '');
+                const revenueCount = parseFloat(revenueText) || 0;
+                revenueCounter.textContent = '₹0';
+                animateCounter(revenueCounter, revenueCount, '₹');
+            }
+            
+            // Auto-refresh dashboard every 60 seconds
+            setTimeout(() => {
+                window.location.reload();
+            }, 60000);
+            
+            // Update page title with counts
+            document.title = `Dashboard (${listingsCount} Listings, ${bookingsCount} Bookings) - Hubilo`;
+        });
+    </script>
+</body>
+</html>

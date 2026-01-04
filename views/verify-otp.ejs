@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP - Hubilo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .otp-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .otp-input {
+            width: 50px;
+            height: 60px;
+            font-size: 24px;
+            text-align: center;
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="otp-container">
+            <h2 class="text-center mb-4">Verify Your Account</h2>
+            <p class="text-center text-muted mb-4">
+                We've sent a 6-digit OTP to your email.
+                Please enter it below to verify your account.
+            </p>
+            
+            <% if (error && error.length > 0) { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <%= error %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% } %>
+            
+            <form id="otpForm" action="/verify-otp" method="POST">
+                <input type="hidden" name="userId" value="<%= userId %>">
+                <input type="hidden" name="userType" value="<%= type %>">
+                
+                <div class="mb-4 text-center">
+                    <div class="d-flex justify-content-center mb-3" id="otpInputs">
+                        <% for(let i = 0; i < 6; i++) { %>
+                            <input type="text" 
+                                   name="otp[]" 
+                                   class="form-control otp-input" 
+                                   maxlength="1" 
+                                   data-index="<%= i %>"
+                                   required
+                                   autocomplete="off"
+                                   inputmode="numeric"
+                                   pattern="[0-9]">
+                        <% } %>
+                    </div>
+                    <small class="text-muted">Enter the 6-digit OTP</small>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100 mb-3" id="verifyBtn">Verify Account</button>
+            </form>
+            
+            <div class="mt-3 text-center">
+                <p>Didn't receive OTP? 
+                    <a href="#" id="resendLink" onclick="resendOTP()">Resend OTP</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get all OTP inputs
+        const otpInputs = document.querySelectorAll('.otp-input');
+        const form = document.getElementById('otpForm');
+        const verifyBtn = document.getElementById('verifyBtn');
+        const resendLink = document.getElementById('resendLink');
+        
+        // Handle OTP input navigation
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('input', function(e) {
+                // Allow only numbers
+                this.value = this.value.replace(/[^0-9]/g, '');
+                
+                // Auto-focus next input
+                if (this.value.length === 1) {
+                    if (index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus();
+                    }
+                }
+                
+                // Check if all inputs are filled for auto-submit
+                checkAllFilled();
+            });
+            
+            input.addEventListener('keydown', function(e) {
+                // Handle backspace
+                if (e.key === 'Backspace' && this.value.length === 0) {
+                    if (index > 0) {
+                        otpInputs[index - 1].focus();
+                        otpInputs[index - 1].value = '';
+                    }
+                }
+                
+                // Handle paste
+                if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
+                    setTimeout(() => {
+                        handlePaste(this, index);
+                    }, 10);
+                }
+            });
+            
+            input.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pastedData = e.clipboardData.getData('text');
+                handlePaste(this, index, pastedData);
+            });
+        });
+        
+        function handlePaste(currentInput, currentIndex, pastedData = null) {
+            if (!pastedData) {
+                pastedData = currentInput.value;
+            }
+            
+            // Extract only numbers
+            const numbers = pastedData.replace(/[^0-9]/g, '').split('');
+            
+            // Fill inputs starting from current position
+            for (let i = 0; i < Math.min(numbers.length, 6 - currentIndex); i++) {
+                otpInputs[currentIndex + i].value = numbers[i] || '';
+            }
+            
+            // Focus last filled input
+            const lastIndex = Math.min(currentIndex + numbers.length - 1, 5);
+            otpInputs[lastIndex].focus();
+            
+            checkAllFilled();
+        }
+        
+        function checkAllFilled() {
+            const allFilled = Array.from(otpInputs).every(input => input.value.length === 1);
+            if (allFilled) {
+                // Auto-submit after 500ms
+                setTimeout(() => {
+                    form.submit();
+                }, 500);
+            }
+        }
+        
+        function resendOTP() {
+            // Disable resend link temporarily
+            resendLink.style.pointerEvents = 'none';
+            resendLink.style.color = '#6c757d';
+            
+            // Send resend OTP request
+            const userId = document.querySelector('input[name="userId"]').value;
+            const userType = document.querySelector('input[name="userType"]').value;
+            
+            fetch('/resend-otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: userId,
+                    userType: userType
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('New OTP has been sent to your email!');
+                    
+                    // Re-enable link after 60 seconds
+                    setTimeout(() => {
+                        resendLink.style.pointerEvents = 'auto';
+                        resendLink.style.color = '#0d6efd';
+                    }, 60000);
+                } else {
+                    alert('Failed to resend OTP: ' + data.message);
+                    resendLink.style.pointerEvents = 'auto';
+                    resendLink.style.color = '#0d6efd';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+                resendLink.style.pointerEvents = 'auto';
+                resendLink.style.color = '#0d6efd';
+            });
+            
+            return false; // Prevent default link behavior
+        }
+        
+        // Focus first input on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            otpInputs[0].focus();
+        });
+    </script>
+</body>
+</html>

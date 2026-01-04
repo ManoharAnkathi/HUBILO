@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+        integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="/css/rating.css">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.13.0/mapbox-gl.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-md bg-body-light border-bottom sticky-top">
+    <div class="container-fluid">
+        <i class="fa-solid fa-compass"></i>
+        <div class="navbar-nav">
+           <b>HUBILO</b> 
+        </div>
+        <div class="navbar-nav ms-auto">
+            <% if(currUser) { %>
+                <a class="nav-link" href="/owner/dashboard"><b>Back</b></a>
+                <a class="nav-link" href="/"><b>Logout</b></a>
+            <% } %>
+        </div>
+        </div>
+    </div>
+    </nav>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.13.0/mapbox-gl.js"></script>
+    <div class="container">
+        <%- include("../includes/flash.ejs") %>
+
+        <!-- My Listings Section -->
+        <div class="mt-5">
+            <h2 class="mb-4">My Listings</h2>
+            
+            <% if (owner.listings && owner.listings.length > 0) { %>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    <% owner.listings.forEach(listing => { %>
+                        <div class="col">
+                            <div class="card h-100 shadow-sm">
+                                <% if (listing.image && listing.image.url) { %>
+                                    <img src="<%= listing.image.url %>" class="card-img-top" alt="<%= listing.title %>" style="height: 200px; object-fit: cover;">
+                                <% } else { %>
+                                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                        <i class="fa-solid fa-image fa-3x text-muted"></i>
+                
+                                    </div>
+                                <% } %>
+                                
+                                <div class="card-body">
+                                    <h5 class="card-title"><%= listing.title %></h5>
+                                </div>
+                                
+                                <div class="card-footer bg-white border-top-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                    
+                                        <a href="/listings/<%= listing._id %>" class="btn btn-sm btn-outline-primary">
+                                            View Details
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <div class="alert alert-info mt-3" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="fa-solid fa-info-circle me-3 fa-2x"></i>
+                        <div>
+                            <h5 class="alert-heading">No Listings Found</h5>
+                            <p class="mb-0">You haven't created any listings yet. Start by creating your first listing!</p>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+        
+    </div>
+
+    <%- include("../includes/footer.ejs") %>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <script src="/js/script.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Booking Receipt - <%= booking._id %></title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .receipt { max-width: 600px; margin: 0 auto; }
+        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; }
+        .details { margin: 20px 0; }
+        .row { display: flex; justify-content: space-between; margin: 5px 0; }
+        .total { font-size: 20px; font-weight: bold; margin-top: 20px; }
+        .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="receipt">
+        <div class="header">
+            <h1>Booking Receipt</h1>
+            <p>Booking ID: <strong><%= booking._id %></strong></p>
+            <p>Date: <%= booking.createdAt.toDateString() %></p>
+        </div>
+        
+        <div class="details">
+            <h3><%= booking.listing.title %></h3>
+            <div class="row">
+                <span>Check-in:</span>
+                <span><%= booking.checkIn.toDateString() %></span>
+            </div>
+            <div class="row">
+                <span>Check-out:</span>
+                <span><%= booking.checkOut.toDateString() %></span>
+            </div>
+            <div class="row">
+                <span>Guests:</span>
+                <span><%= booking.numberOfGuests %></span>
+            </div>
+            <div class="row">
+                <span>Status:</span>
+                <span><%= booking.status %></span>
+            </div>
+        </div>
+        
+        <div class="total">
+            Total Amount: $<%= booking.totalPrice %>
+        </div>
+        
+        <div class="footer">
+            <p>Thank you for booking with us!</p>
+            <p>This is an automatically generated receipt</p>
+        </div>
+    </div>
+    
+    <script>
+        window.onload = function() {
+            window.print();
+            setTimeout(() => {
+                window.close();
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

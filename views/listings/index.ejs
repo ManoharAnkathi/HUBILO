@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hubilo</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+        integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="/css/rating.css">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.13.0/mapbox-gl.css" rel="stylesheet">
+    <style>
+    .search-btn {
+        background-color: rgb(218, 35, 35);
+        color: white;
+        border-radius: 25px;
+    }
+
+    .search-btn:hover {
+        background-color: rgb(218, 35, 35);
+        color: white;
+    }
+
+    .search-inp {
+        border-radius: 25px;
+        padding: 0.5rem 3rem 0.5rem 3rem;
+    }
+
+    .filter {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: white;
+        color: black;
+    }
+
+    .filter:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+        background-color: #f8f9fa;
+    }
+    .tax-info {
+        display: none;
+    }
+    
+    .switch{
+        border-radius: 0.5rem;
+        height: 3rem;
+        width: 8rem;
+        padding-top: 0.5rem;
+        padding-left: 0.5rem;
+    }
+
+    .listing-card {
+        margin-bottom: 20px;
+        transition: transform 0.3s;
+        height: 100%;
+    }
+
+    .listing-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .listing_link {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .listing_link:hover {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .card-img-top {
+        object-fit: cover;
+    }
+
+    .no-results {
+        text-align: center;
+        padding: 40px;
+        font-size: 1.2rem;
+        color: #666;
+    }
+
+    .search-container {
+        margin-bottom: 30px;
+    }
+
+    .search-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .search-results-count {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .active-search {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 20px;
+    }
+
+    .active-search-term {
+        display: inline-flex;
+        align-items: center;
+        background-color: #e9ecef;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+    }
+
+    .clear-search-btn {
+        background: none;
+        border: none;
+        color: #666;
+        cursor: pointer;
+        margin-left: 10px;
+        font-size: 1.2rem;
+    }
+
+    .clear-search-btn:hover {
+        color: #dc3545;
+    }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-md bg-body-light border-bottom sticky-top">
+        <div class="container-fluid">
+            <i class="fa-solid fa-compass"></i>
+            <div class="navbar-nav">
+                <b>HUBILO</b>
+            </div>
+            <div class="navbar-nav ms-auto">
+                <!-- Search Form - Updated with action and method -->
+                <form class="d-flex" action="/listings/user/<%-currUser._id%>" method="GET">
+                    <input class="form-control me-2 search-inp" type="search" name="search" placeholder="Search destinations" aria-label="Search" value="<%= searchQuery || '' %>">
+                    <button class="btn search-btn" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </form>
+            </div>
+            <div class="navbar-nav ms-auto">
+                <% if(currUser) { %>
+                <a class="nav-link" href="/user/bookings"><b>My Bookings</b></a>
+                <a class="nav-link" href="/owner/signup"><b>Become a host</b></a>
+                <a class="nav-link" href="/"><b>Logout</b></a>
+                <% }  %>
+                
+            </div>
+        </div>
+    </nav>
+
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.13.0/mapbox-gl.js"></script>
+    
+    <div class="container">
+        <%- include("../includes/flash.ejs") %>
+
+        <!-- Search Results Header -->
+        <% if(searchQuery) { %>
+        <div class="search-header">
+            <div>
+                <h4>Search Results for "<%= searchQuery %>"</h4>
+                <div class="search-results-count">
+                    <%= allListings.length %> <%= allListings.length === 1 ? 'listing' : 'listings' %> found
+                </div>
+            </div>
+            <a href="/listings/user/<%-currUser._id%>" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-times"></i> Clear Search
+            </a>
+        </div>
+        <% } %>
+
+        <!-- Filters Section -->
+        <div id="filters" class="row g-3 g-sm-4 mb-4">
+            <!-- Each filter in a responsive column -->
+            <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=rooms'">
+                    <div class="mb-1"><i class="fa-solid fa-bed fa-lg text-dark"></i></div>
+                    <p class="mb-0 small fw-medium">Rooms</p>
+                </div>
+            </div>
+
+            <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=beach'">
+                    <div class="mb-1"><i class="fa-solid fa-water fa-lg text-dark"></i></div>
+                    <p class="mb-0 small fw-medium">Beach</p>
+                </div>
+            </div>
+
+            <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=resorts'">
+                    <div class="mb-1"><i class="fa-solid fa-hotel fa-lg text-dark"></i></div>
+                    <p class="mb-0 small fw-medium">Resorts</p>
+                </div>
+            </div>
+
+
+            <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=villa'">
+                    <div class="mb-1"><i class="fa-solid fa-mountain-city fa-lg text-dark"></i></div>
+                    <p class="mb-0 small fw-medium">Villa</p>
+                </div>
+            </div>
+
+            <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=apartment'">
+                    <div class="mb-1"><i class="fa-solid fa-city fa-lg text-dark"></i></div>
+                    <p class="mb-0 small fw-medium">Apartment</p>
+                </div>
+            </div>
+
+            <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=castle'">
+                    <div class="mb-1"><i class="fa-solid fa-font-awesome fa-lg text-dark"></i></div>
+                    <p class="mb-0 small fw-medium">Castle</p>
+                </div>
+            </div>
+
+            <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=pool'">
+                    <div class="mb-1"><i class="fa-solid fa-water-ladder fa-lg text-dark"></i></div>
+                    <p class="mb-0 small fw-medium">Pool</p>
+                </div>
+            </div>
+
+            <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=tent'">
+                    <div class="mb-1"><i class="fa-solid fa-campground fa-lg text-dark"></i></div>
+                    <p class="mb-0 small fw-medium">Tent</p>
+                </div>
+            </div>
+
+            <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=farm'">
+                    <div class="mb-1"><i class="fa-solid fa-cow fa-lg text-dark"></i></div>
+                    <p class="mb-0 small fw-medium">Farm</p>
+                </div>
+            </div>
+
+            <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=stand'">
+                    <div class="mb-1"><i class="fa-solid fa-tower-observation fa-lg text-dark"></i></div>
+                    <p class="mb-0 small fw-medium">Stand</p>
+                </div>
+            </div>
+
+            <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=garage'">
+                    <div class="mb-1"><i class="fa-solid fa-warehouse fa-lg text-dark"></i></div>
+                    <p class="mb-0 small fw-medium">Garage</p>
+                </div>
+            </div>
+
+            <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=hotel'">
+                    <div class="mb-1"><i class="fa-solid fa-building fa-lg text-dark"></i></div>
+                    <p class="mb-0 small fw-medium">Hotel</p>
+                </div>
+            </div>
+        </div>
+        <!-- Listings Grid -->
+        <% if(allListings.length > 0) { %>
+        <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 mt-3">
+            <% for(let listing of allListings){ %>
+            <div class="col mb-4">
+                <a href="/listings/<%=listing._id%>" class="listing_link">
+                    <div class="card listing-card">
+                        <img src="<%=listing.image.url%>" class="card-img-top" alt="<%= listing.title %>" style="height: 20rem;">
+                        <div class="card-img-overlay">
+                            <span class="badge bg-danger">HUBILO</span>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <%= listing.title %>
+                            </h5>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    <% if(listing.location) { %>
+                                    <i class="fa-solid fa-location-dot"></i> <%= listing.location %>
+                                    <% } %>
+                                </small>
+                            </p>
+                            <p class="card-text">
+                                <b>₹<%=listing.price.toLocaleString("en-IN")%></b> / night
+                            </p>
+                            <% if(listing.rating) { %>
+                            <div class="d-flex align-items-center">
+                                <div class="rating">
+                                    <% for(let i = 1; i <= 5; i++) { %>
+                                        <% if(i <= Math.floor(listing.rating)) { %>
+                                            <span class="star filled">★</span>
+                                        <% } else if(i === Math.ceil(listing.rating) && listing.rating % 1 !== 0) { %>
+                                            <span class="star half-filled">★</span>
+                                        <% } else { %>
+                                            <span class="star">★</span>
+                                        <% } %>
+                                    <% } %>
+                                </div>
+                                <span class="ms-2"><%= listing.rating.toFixed(1) %></span>
+                            </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <% } %>
+        </div>
+        <% } else { %>
+        <!-- No Results Message -->
+        <div class="no-results">
+            <% if(searchQuery) { %>
+            <i class="fa-solid fa-magnifying-glass fa-3x mb-3" style="color: #ccc;"></i>
+            <h4>No listings found for "<%= searchQuery %>"</h4>
+            <p class="text-muted">Try adjusting your search or filter to find what you're looking for.</p>
+            <a href="/listings" class="btn btn-primary mt-3">
+                <i class="fa-solid fa-arrow-left"></i> View All Listings
+            </a>
+            <% } else { %>
+            <i class="fa-solid fa-house fa-3x mb-3" style="color: #ccc;"></i>
+            <h4>No listings available at the moment</h4>
+            <p class="text-muted">Please check back later or try a different search.</p>
+            <% } %>
+        </div>
+        <% } %>
+    </div>
+
+    <%- include("../includes/footer.ejs") %>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    
+    <script>
+        // Initialize Bootstrap components
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tax switch functionality
+            let taxSwitch = document.getElementById("flexSwitchCheckDefault");
+            if(taxSwitch) {
+                taxSwitch.addEventListener("click", () => {
+                    let taxinfo = document.getElementsByClassName("tax-info");
+                    for (let info of taxinfo) {
+                        if (info.style.display != "inline") {
+                            info.style.display = "inline";
+                        } else {
+                            info.style.display = "none";
+                        }
+                    }
+                });
+            }
+
+            // Search form validation
+            const searchForm = document.querySelector('form.d-flex');
+            if(searchForm) {
+                searchForm.addEventListener('submit', function(e) {
+                    const searchInput = this.querySelector('input[name="search"]');
+                    if(searchInput.value.trim() === '') {
+                        e.preventDefault();
+                        searchInput.focus();
+                    }
+                });
+            }
+
+            // Highlight search term in results
+            const searchQuery = "<%= searchQuery || '' %>";
+            if(searchQuery) {
+                const cards = document.querySelectorAll('.card-title');
+                cards.forEach(card => {
+                    const text = card.textContent;
+                    const regex = new RegExp(`(${searchQuery})`, 'gi');
+                    card.innerHTML = text.replace(regex, '<span class="bg-warning">$1</span>');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

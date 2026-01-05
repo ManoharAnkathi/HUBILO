@@ -87,7 +87,7 @@ module.exports.showListing = async (req, res, next) => {
     if (!listing) {
         throw new ExpressError(404, "Listing not found");
     }
-    res.render("listings/show", { listing });
+    res.render("listings/show", { listing },userId: req.user ? req.user._id : req.params.id,currUser: req.user);
 }
 
 module.exports.editListing = wrapAsync(async (req, res) => {

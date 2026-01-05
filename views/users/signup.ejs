@@ -35,13 +35,7 @@
             <div class="col-6 offset-3">
                 <h3>SignUp on Hubilo</h3>
 
-                <% if (error && error.length > 0) { %>
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <%= error %>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                <% } %>
-
+                
                 <form method="post" action="/signup" class="needs-validation" novalidate>
                     <div class="row mb-3">
                         <div class="col-md-6">

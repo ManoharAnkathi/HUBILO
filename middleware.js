@@ -5,11 +5,20 @@ const ExpressError = require("./utils/ExpressError.js");
 
 //Isloggedin Middleware
 module.exports.isLoggedIn = (req, res, next) => {
+    console.log("=== isLoggedIn Middleware ===");
+    console.log("req.isAuthenticated():", req.isAuthenticated());
+    console.log("req.user:", req.user);
+    console.log("req.session:", req.session);
+    console.log("req.sessionID:", req.sessionID);
+    
     if (!req.isAuthenticated()) {
+        console.log("User NOT authenticated. Redirecting to login.");
         req.session.redirectUrl = req.originalUrl;
         req.flash("failure", "Login to wanderlust");
         return res.redirect("/login");
     }
+    
+    console.log("User IS authenticated. Proceeding...");
     next();
 }
 

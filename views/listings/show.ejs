@@ -39,20 +39,18 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav">
-                <% if((currUser && !currUser._id.equals(listing.owner._id)) || (userId && listing.owner._id.toString() !== userId)) { %>
+                <% if((currUser && !currUser._id.equals(listing.owner._id))) { %>
                     <a class="nav-link" href="/listings/user/<%= currUser ? currUser._id : userId %>"><b>HOME</b></a>
                 <% }else{ %>
-                
                     <B>HUBILO</B>
                 <% } %>
 
             </div>
             <div class="navbar-nav ms-auto">
-                <% if((currUser && !currUser._id.equals(listing.owner._id)) || (userId && listing.owner._id.toString() !== userId)) { %>
+                <% if((currUser && !currUser._id.equals(listing.owner._id))) { %>
                     <a class="nav-link" href="/listings/user/<%= currUser ? currUser._id : userId %>"><b>Back</b></a>
                     <a class="nav-link" href="/"><b>Logout</b></a>
                 <% }else{ %>
-                
                     <a class="nav-link" href="/owner/listings"><b>Back</b></a>
                     <a class="nav-link" href="/"><b>Logout</b></a>
                 <% } %>
@@ -93,7 +91,7 @@
                         </p>
                     <%}%>
                 </div>
-                <% if((currUser && !currUser._id.equals(listing.owner._id)) || (userId && listing.owner._id.toString() !== userId)) { %>
+                <% if((currUser && !currUser._id.equals(listing.owner._id))) { %>
                 <div>
                     <a href="/bookings/<%=listing._id%>/new" class="btn btn-dark offset-3 add-btn"> BOOK NOW</a>
                 </div>

@@ -142,7 +142,7 @@
             </div>
             <div class="navbar-nav ms-auto">
                 <!-- Search Form - Updated with action and method -->
-                <form class="d-flex" action="/listings/user/<%-currUser._id%>" method="GET">
+                <form class="d-flex" action="/listings/user/<%= userId || (currUser && currUser._id) %>" method="GET">
                     <input class="form-control me-2 search-inp" type="search" name="search" placeholder="Search destinations" aria-label="Search" value="<%= searchQuery || '' %>">
                     <button class="btn search-btn" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
                 </form>

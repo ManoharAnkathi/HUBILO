@@ -41,8 +41,8 @@
             <div class="navbar-nav">
                 <% if((currUser && !currUser._id.equals(listing.owner._id)) || (userId && listing.owner._id.toString() !== userId)) { %>
                     <a class="nav-link" href="/listings/user/<%= currUser ? currUser._id : userId %>"><b>HOME</b></a>
-                <% } %>
-                <% if((currUser && currUser._id.equals(listing.owner._id)) || (userId && listing.owner._id.toString() === userId)) { %>
+                <% }else{ %>
+                
                     <B>HUBILO</B>
                 <% } %>
 
@@ -51,8 +51,8 @@
                 <% if((currUser && !currUser._id.equals(listing.owner._id)) || (userId && listing.owner._id.toString() !== userId)) { %>
                     <a class="nav-link" href="/listings/user/<%= currUser ? currUser._id : userId %>"><b>Back</b></a>
                     <a class="nav-link" href="/"><b>Logout</b></a>
-                <% } %>
-                <% if((currUser && currUser._id.equals(listing.owner._id)) || (userId && listing.owner._id.toString() === userId)) { %>
+                <% }else{ %>
+                
                     <a class="nav-link" href="/owner/listings"><b>Back</b></a>
                     <a class="nav-link" href="/"><b>Logout</b></a>
                 <% } %>

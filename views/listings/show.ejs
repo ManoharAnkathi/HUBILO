@@ -39,20 +39,20 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div class="navbar-nav">
-                <% if((currUser && !currUser._id.equals(listing.owner._id))) { %>
-                    <a class="nav-link" href="/listings/user"><b>HOME</b></a>
+                <% if((currUser && !currUser._id.equals(listing.owner._id)) || (userId && listing.owner._id.toString() !== userId)) { %>
+                    <a class="nav-link" href="/listings/user/<%= currUser ? currUser._id : userId %>"><b>HOME</b></a>
                 <% } %>
-                <% if((currUser && currUser._id.equals(listing.owner._id)) ) { %>
+                <% if((currUser && currUser._id.equals(listing.owner._id)) || (userId && listing.owner._id.toString() === userId)) { %>
                     <B>HUBILO</B>
                 <% } %>
 
             </div>
             <div class="navbar-nav ms-auto">
-                <% if((currUser && !currUser._id.equals(listing.owner._id))) { %>
-                    <a class="nav-link" href="/listings/user/<%= currUser._id %>"><b>Back</b></a>
+                <% if((currUser && !currUser._id.equals(listing.owner._id)) || (userId && listing.owner._id.toString() !== userId)) { %>
+                    <a class="nav-link" href="/listings/user/<%= currUser ? currUser._id : userId %>"><b>Back</b></a>
                     <a class="nav-link" href="/"><b>Logout</b></a>
                 <% } %>
-                <% if((currUser && currUser._id.equals(listing.owner._id))) { %>
+                <% if((currUser && currUser._id.equals(listing.owner._id)) || (userId && listing.owner._id.toString() === userId)) { %>
                     <a class="nav-link" href="/owner/listings"><b>Back</b></a>
                     <a class="nav-link" href="/"><b>Logout</b></a>
                 <% } %>
@@ -84,7 +84,7 @@
                        <b> Description: </b><%=listing.description%>
                     </p>
                     <p class="card-text"> <b>Price/night: </b>&#8377 <%=listing.price.toLocaleString("en-IN")%></p>
-                    <% if((currUser && !currUser._id.equals(listing.owner._id)) || (!userId.equals(listing.owner._id))) { %>
+                    <% if((currUser && !currUser._id.equals(listing.owner._id)) || (userId && listing.owner._id.toString() !== userId)) { %>
                         <p class="card-text">
                             <b>Location: </b><%=listing.location%>
                         </p>
@@ -93,7 +93,7 @@
                         </p>
                     <%}%>
                 </div>
-                <% if((currUser && !currUser._id.equals(listing.owner._id)) ) { %>
+                <% if((currUser && !currUser._id.equals(listing.owner._id)) || (userId && listing.owner._id.toString() !== userId)) { %>
                 <div>
                     <a href="/bookings/<%=listing._id%>/new" class="btn btn-dark offset-3 add-btn"> BOOK NOW</a>
                 </div>
@@ -101,20 +101,20 @@
             </div>
             <br>
             
-            <% if(currUser && currUser._id.equals(listing.owner._id)){%>
+            <% if((currUser && currUser._id.equals(listing.owner._id)) || (userId && listing.owner._id.toString() === userId)) { %>
                 <div class="btns">
                     <a href="/listings/<%=listing._id%>/edit" class="btn btn-dark col-1 offset-3 add-btn">Edit</a>
                     <form method="post" action="/listings/<%=listing._id%>?_method=DELETE">
                         <button class="btn btn-dark offset-5">Delete</button>
                     </form>
                 </div>
-            <%}%>
+            <% } %>
             <div class="col-5 offset-3">
                 <b>Location</b>
                 <div id="map"></div>
             </div>
                     <div class="col-7 offset-3">
-                        <% if((currUser && !currUser._id.equals(listing.owner._id)) ) { %>
+                        <% if((currUser && !currUser._id.equals(listing.owner._id)) || (userId && listing.owner._id.toString() !== userId)) { %>
                             <hr>
                             <h4>Leave a review</h4>
                             <form action="/listings/<%=listing._id%>/reviews" method="post" class="needs-validation"
@@ -181,8 +181,3 @@
 </body>
 
 </html>
-
-
-    
-
-    

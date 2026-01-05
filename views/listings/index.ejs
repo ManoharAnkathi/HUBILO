@@ -170,7 +170,7 @@
                     <%= allListings.length %> <%= allListings.length === 1 ? 'listing' : 'listings' %> found
                 </div>
             </div>
-            <a href="/listings/user/<%-currUser._id%>" class="btn btn-outline-secondary">
+            <a href="/listings/user/<%= userId || (currUser && currUser._id) %>" class="btn btn-outline-secondary">
                 <i class="fa-solid fa-times"></i> Clear Search
             </a>
         </div>
@@ -180,21 +180,21 @@
         <div id="filters" class="row g-3 g-sm-4 mb-4">
             <!-- Each filter in a responsive column -->
             <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
-                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=rooms'">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%= userId || (currUser && currUser._id) %>?category=rooms'">
                     <div class="mb-1"><i class="fa-solid fa-bed fa-lg text-dark"></i></div>
                     <p class="mb-0 small fw-medium">Rooms</p>
                 </div>
             </div>
 
             <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
-                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=beach'">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%= userId || (currUser && currUser._id) %>?category=beach'">
                     <div class="mb-1"><i class="fa-solid fa-water fa-lg text-dark"></i></div>
                     <p class="mb-0 small fw-medium">Beach</p>
                 </div>
             </div>
 
             <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
-                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=resorts'">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%= userId || (currUser && currUser._id) %>?category=resorts'">
                     <div class="mb-1"><i class="fa-solid fa-hotel fa-lg text-dark"></i></div>
                     <p class="mb-0 small fw-medium">Resorts</p>
                 </div>
@@ -202,63 +202,63 @@
 
 
             <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
-                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=villa'">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%= userId || (currUser && currUser._id) %>?category=villa'">
                     <div class="mb-1"><i class="fa-solid fa-mountain-city fa-lg text-dark"></i></div>
                     <p class="mb-0 small fw-medium">Villa</p>
                 </div>
             </div>
 
             <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
-                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=apartment'">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%= userId || (currUser && currUser._id) %>?category=apartment'">
                     <div class="mb-1"><i class="fa-solid fa-city fa-lg text-dark"></i></div>
                     <p class="mb-0 small fw-medium">Apartment</p>
                 </div>
             </div>
 
             <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
-                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=castle'">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%= userId || (currUser && currUser._id) %>?category=castle'">
                     <div class="mb-1"><i class="fa-solid fa-font-awesome fa-lg text-dark"></i></div>
                     <p class="mb-0 small fw-medium">Castle</p>
                 </div>
             </div>
 
             <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
-                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=pool'">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%= userId || (currUser && currUser._id) %>?category=pool'">
                     <div class="mb-1"><i class="fa-solid fa-water-ladder fa-lg text-dark"></i></div>
                     <p class="mb-0 small fw-medium">Pool</p>
                 </div>
             </div>
 
             <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
-                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=tent'">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%= userId || (currUser && currUser._id) %>?category=tent'">
                     <div class="mb-1"><i class="fa-solid fa-campground fa-lg text-dark"></i></div>
                     <p class="mb-0 small fw-medium">Tent</p>
                 </div>
             </div>
 
             <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
-                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=farm'">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%= userId || (currUser && currUser._id) %>?category=farm'">
                     <div class="mb-1"><i class="fa-solid fa-cow fa-lg text-dark"></i></div>
                     <p class="mb-0 small fw-medium">Farm</p>
                 </div>
             </div>
 
             <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
-                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=stand'">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%= userId || (currUser && currUser._id) %>?category=stand'">
                     <div class="mb-1"><i class="fa-solid fa-tower-observation fa-lg text-dark"></i></div>
                     <p class="mb-0 small fw-medium">Stand</p>
                 </div>
             </div>
 
             <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
-                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=garage'">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%= userId || (currUser && currUser._id) %>?category=garage'">
                     <div class="mb-1"><i class="fa-solid fa-warehouse fa-lg text-dark"></i></div>
                     <p class="mb-0 small fw-medium">Garage</p>
                 </div>
             </div>
 
             <div class="col-4 col-sm-3 col-md-2 col-lg-2 col-xl-1">
-                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%-currUser._id%>?category=hotel'">
+                <div class="filter text-center p-2 rounded shadow-sm" onclick="window.location.href='/listings/user/<%= userId || (currUser && currUser._id) %>?category=hotel'">
                     <div class="mb-1"><i class="fa-solid fa-building fa-lg text-dark"></i></div>
                     <p class="mb-0 small fw-medium">Hotel</p>
                 </div>

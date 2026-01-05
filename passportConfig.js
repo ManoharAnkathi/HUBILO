@@ -2,9 +2,9 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./models/user");
 const Owner = require("./models/owner");
+const AppAdmin = require("./models/appAdmin"); // Make sure this model exists
 
-
-// User Strategy (CHANGED FROM "user-local" TO "local")
+// User Strategy
 passport.use("local", new LocalStrategy(
     {
         usernameField: "username",
@@ -26,12 +26,6 @@ passport.use("local", new LocalStrategy(
                 return done(null, false);
             }
             
-            // Check if account is verified (optional - add this if you want email verification for users too)
-            // if (!user.isVerified) {
-            //     req.flash("warning", "Please verify your email before logging in");
-            //     return done(null, false);
-            // }
-            
             // Authenticate using passport-local-mongoose
             user.authenticate(password, function(err, userModel, passwordErr) {
                 if (err) return done(err);
@@ -51,7 +45,7 @@ passport.use("local", new LocalStrategy(
     }
 ));
 
-// Owner Strategy (unchanged)
+// Owner Strategy
 passport.use("owner-local", new LocalStrategy(
     {
         usernameField: "username",
@@ -98,6 +92,7 @@ passport.use("owner-local", new LocalStrategy(
     }
 ));
 
+// Admin Strategy (if you use it)
 passport.use("admin-local", new LocalStrategy(
     {
         usernameField: "username",
@@ -105,6 +100,12 @@ passport.use("admin-local", new LocalStrategy(
     },
     async function(req, username, password, done) {
         try {
+            // First check if AppAdmin model exists
+            if (!AppAdmin) {
+                req.flash("error", "Admin authentication not configured");
+                return done(null, false);
+            }
+            
             // Try to find by username
             let admin = await AppAdmin.findOne({ username: username });
             
@@ -120,13 +121,13 @@ passport.use("admin-local", new LocalStrategy(
             }
             
             // Check if admin account is active
-            if (!admin.isActive) {
+            if (admin.isActive !== undefined && !admin.isActive) {
                 req.flash("error", "Admin account is inactive. Contact super admin.");
                 return done(null, false);
             }
             
             // Check if account is verified
-            if (!admin.isVerified) {
+            if (admin.isVerified !== undefined && !admin.isVerified) {
                 req.flash("warning", "Please verify your email before logging in");
                 return done(null, false);
             }
@@ -150,49 +151,39 @@ passport.use("admin-local", new LocalStrategy(
     }
 ));
 
-// Update the serializeUser function in passportConfig.js
-// (Your existing serializeUser should already handle all types)
+// ==================== SINGLE SET OF SERIALIZE/DESERIALIZE FUNCTIONS ====================
+// REMOVED DUPLICATES - Only one set should exist
+
+// Serialize user/owner/admin - Store type and ID
 passport.serializeUser(function(userOrOwnerOrAdmin, done) {
+    // Store both the ID and the model type
     done(null, { 
         id: userOrOwnerOrAdmin._id, 
         type: userOrOwnerOrAdmin.constructor.modelName // 'User', 'Owner', or 'AppAdmin'
     });
 });
 
-// Update the deserializeUser function in passportConfig.js
-passport.deserializeUser(function(obj, done) {
-    if (obj.type === 'Owner') {
-        Owner.findById(obj.id)
-            .then(owner => done(null, owner))
-            .catch(err => done(err, null));
-    } else if (obj.type === 'AppAdmin') {
-        AppAdmin.findById(obj.id)
-            .then(admin => done(null, admin))
-            .catch(err => done(err, null));
-    } else {
-        User.findById(obj.id)
-            .then(user => done(null, user))
-            .catch(err => done(err, null));
-    }
-});
-
-// Serialize user/owner - Store type and ID
-passport.serializeUser(function(userOrOwner, done) {
-    // Store both the ID and the model type
-    done(null, { 
-        id: userOrOwner._id, 
-        type: userOrOwner.constructor.modelName // 'User' or 'Owner'
-    });
-});
-
-// Deserialize user/owner - Load based on type
+// Deserialize user/owner/admin - Load based on type
 passport.deserializeUser(function(obj, done) {
     // Based on the type, use the correct model
     if (obj.type === 'Owner') {
         Owner.findById(obj.id)
             .then(owner => done(null, owner))
             .catch(err => done(err, null));
+    } else if (obj.type === 'AppAdmin') {
+        // Check if AppAdmin model exists before using it
+        if (AppAdmin) {
+            AppAdmin.findById(obj.id)
+                .then(admin => done(null, admin))
+                .catch(err => done(err, null));
+        } else {
+            // If AppAdmin doesn't exist, try User
+            User.findById(obj.id)
+                .then(user => done(null, user))
+                .catch(err => done(err, null));
+        }
     } else {
+        // Default to User
         User.findById(obj.id)
             .then(user => done(null, user))
             .catch(err => done(err, null));

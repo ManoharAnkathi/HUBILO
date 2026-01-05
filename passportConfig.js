@@ -2,9 +2,8 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./models/user");
 const Owner = require("./models/owner");
-const AppAdmin = require("./models/appAdmin"); // Make sure this model exists
 
-// User Strategy
+// User Strategy (for regular users)
 passport.use("local", new LocalStrategy(
     {
         usernameField: "username",
@@ -12,6 +11,8 @@ passport.use("local", new LocalStrategy(
     },
     async function(req, username, password, done) {
         try {
+            console.log("User login attempt for:", username);
+            
             // Try to find by username
             let user = await User.findOne({ username: username });
             
@@ -22,30 +23,40 @@ passport.use("local", new LocalStrategy(
             
             // If user not found
             if (!user) {
+                console.log("User not found for:", username);
                 req.flash("error", "Invalid username/email or password");
                 return done(null, false);
             }
             
+            console.log("User found:", user._id);
+            
             // Authenticate using passport-local-mongoose
             user.authenticate(password, function(err, userModel, passwordErr) {
-                if (err) return done(err);
+                if (err) {
+                    console.log("Authentication error:", err);
+                    return done(err);
+                }
                 if (passwordErr) {
+                    console.log("Password error for user:", user._id);
                     req.flash("error", "Invalid username/email or password");
                     return done(null, false);
                 }
                 if (!userModel) {
+                    console.log("No user model returned for:", user._id);
                     req.flash("error", "Invalid username/email or password");
                     return done(null, false);
                 }
+                console.log("User authentication successful:", userModel._id);
                 return done(null, userModel);
             });
         } catch (error) {
+            console.log("Login strategy error:", error);
             return done(error);
         }
     }
 ));
 
-// Owner Strategy
+// Owner Strategy (for property owners/hosts)
 passport.use("owner-local", new LocalStrategy(
     {
         usernameField: "username",
@@ -53,6 +64,8 @@ passport.use("owner-local", new LocalStrategy(
     },
     async function(req, username, password, done) {
         try {
+            console.log("Owner login attempt for:", username);
+            
             // Try to find by username
             let owner = await Owner.findOne({ username: username });
             
@@ -63,130 +76,96 @@ passport.use("owner-local", new LocalStrategy(
             
             // If owner not found
             if (!owner) {
+                console.log("Owner not found for:", username);
                 req.flash("error", "Invalid username/email or password");
                 return done(null, false);
             }
             
+            console.log("Owner found:", owner._id);
+            
             // Check if account is verified
             if (!owner.isVerified) {
+                console.log("Owner account not verified:", owner._id);
                 req.flash("warning", "Please verify your email before logging in");
                 return done(null, false);
             }
             
             // Authenticate using passport-local-mongoose
             owner.authenticate(password, function(err, ownerModel, passwordErr) {
-                if (err) return done(err);
+                if (err) {
+                    console.log("Owner authentication error:", err);
+                    return done(err);
+                }
                 if (passwordErr) {
+                    console.log("Owner password error:", owner._id);
                     req.flash("error", "Invalid username/email or password");
                     return done(null, false);
                 }
                 if (!ownerModel) {
+                    console.log("No owner model returned for:", owner._id);
                     req.flash("error", "Invalid username/email or password");
                     return done(null, false);
                 }
+                console.log("Owner authentication successful:", ownerModel._id);
                 return done(null, ownerModel);
             });
         } catch (error) {
-            return done(error);
-        }
-    }
-));
-
-// Admin Strategy (if you use it)
-passport.use("admin-local", new LocalStrategy(
-    {
-        usernameField: "username",
-        passReqToCallback: true
-    },
-    async function(req, username, password, done) {
-        try {
-            // First check if AppAdmin model exists
-            if (!AppAdmin) {
-                req.flash("error", "Admin authentication not configured");
-                return done(null, false);
-            }
-            
-            // Try to find by username
-            let admin = await AppAdmin.findOne({ username: username });
-            
-            // If not found by username, try by email
-            if (!admin) {
-                admin = await AppAdmin.findOne({ email: username });
-            }
-            
-            // If admin not found
-            if (!admin) {
-                req.flash("error", "Invalid admin credentials");
-                return done(null, false);
-            }
-            
-            // Check if admin account is active
-            if (admin.isActive !== undefined && !admin.isActive) {
-                req.flash("error", "Admin account is inactive. Contact super admin.");
-                return done(null, false);
-            }
-            
-            // Check if account is verified
-            if (admin.isVerified !== undefined && !admin.isVerified) {
-                req.flash("warning", "Please verify your email before logging in");
-                return done(null, false);
-            }
-            
-            // Authenticate using passport-local-mongoose
-            admin.authenticate(password, function(err, adminModel, passwordErr) {
-                if (err) return done(err);
-                if (passwordErr) {
-                    req.flash("error", "Invalid admin credentials");
-                    return done(null, false);
-                }
-                if (!adminModel) {
-                    req.flash("error", "Invalid admin credentials");
-                    return done(null, false);
-                }
-                return done(null, adminModel);
-            });
-        } catch (error) {
+            console.log("Owner login strategy error:", error);
             return done(error);
         }
     }
 ));
 
 // ==================== SINGLE SET OF SERIALIZE/DESERIALIZE FUNCTIONS ====================
-// REMOVED DUPLICATES - Only one set should exist
 
-// Serialize user/owner/admin - Store type and ID
-passport.serializeUser(function(userOrOwnerOrAdmin, done) {
-    // Store both the ID and the model type
-    done(null, { 
-        id: userOrOwnerOrAdmin._id, 
-        type: userOrOwnerOrAdmin.constructor.modelName // 'User', 'Owner', or 'AppAdmin'
-    });
+// Serialize user/owner - Store type and ID
+passport.serializeUser(function(userOrOwner, done) {
+    console.log("=== Serialize User Called ===");
+    console.log("Object to serialize:", userOrOwner);
+    console.log("Object type:", userOrOwner.constructor.modelName);
+    console.log("Object ID:", userOrOwner._id);
+    
+    // Make sure to convert ID to string
+    const serializedData = { 
+        id: userOrOwner._id.toString(), 
+        type: userOrOwner.constructor.modelName // 'User' or 'Owner'
+    };
+    
+    console.log("Serialized data:", serializedData);
+    done(null, serializedData);
 });
 
-// Deserialize user/owner/admin - Load based on type
-passport.deserializeUser(function(obj, done) {
-    // Based on the type, use the correct model
-    if (obj.type === 'Owner') {
-        Owner.findById(obj.id)
-            .then(owner => done(null, owner))
-            .catch(err => done(err, null));
-    } else if (obj.type === 'AppAdmin') {
-        // Check if AppAdmin model exists before using it
-        if (AppAdmin) {
-            AppAdmin.findById(obj.id)
-                .then(admin => done(null, admin))
-                .catch(err => done(err, null));
-        } else {
-            // If AppAdmin doesn't exist, try User
-            User.findById(obj.id)
-                .then(user => done(null, user))
-                .catch(err => done(err, null));
+// Deserialize user/owner - Load based on type
+passport.deserializeUser(async function(obj, done) {
+    console.log("=== Deserialize User Called ===");
+    console.log("Object from session:", obj);
+    
+    try {
+        if (!obj || !obj.id) {
+            console.log("No user/owner ID found in session");
+            return done(null, null);
         }
-    } else {
-        // Default to User
-        User.findById(obj.id)
-            .then(user => done(null, user))
-            .catch(err => done(err, null));
+        
+        let userDoc = null;
+        
+        if (obj.type === 'Owner') {
+            console.log("Loading Owner with ID:", obj.id);
+            userDoc = await Owner.findById(obj.id);
+        } else {
+            console.log("Loading User with ID:", obj.id);
+            userDoc = await User.findById(obj.id);
+        }
+        
+        if (!userDoc) {
+            console.log("No document found for ID:", obj.id);
+        } else {
+            console.log("Document found:", userDoc._id);
+        }
+        
+        done(null, userDoc);
+    } catch (error) {
+        console.error("Deserialize error:", error);
+        done(error, null);
     }
 });
 

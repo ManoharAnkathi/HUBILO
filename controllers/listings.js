@@ -26,7 +26,8 @@ module.exports.index = wrapAsync(async (req, res) => {
         res.render('listings/index', {
             allListings,
             searchQuery: search || '',
-            currUser: req.user // Assuming you have user authentication
+            currUser: req.user,
+            userId: req.user ? req.user._id : req.params.id// Assuming you have user authentication
         });
     } catch (error) {
         console.error('Error fetching listings:', error);

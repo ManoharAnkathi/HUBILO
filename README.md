@@ -2,6 +2,53 @@
 
 WanderLust is a full-featured Node.js web application that allows users to create, view, edit, and review travel listings. It incorporates user authentication, image upload, map integration, and form validation — all wrapped with responsive EJS templates.
 
+---
+
+# 🚂 Railway Traffic Management System
+
+**NEW!** This repository now includes an intelligent decision-support system for Indian Railways train traffic controllers. The system uses AI and optimization algorithms to manage train movements, minimize delays, and maximize throughput.
+
+## Quick Start - Railway System
+
+```bash
+# 1. Seed railway data
+npm run seed-railway
+
+# 2. Test the system
+npm run test-railway
+
+# 3. Start the server
+npm start
+
+# 4. Access the railway dashboard
+http://localhost:8080/railway/dashboard
+```
+
+📚 **Complete Documentation:**
+- [Railway Build Steps](RAILWAY_BUILD_STEPS.md) - Step-by-step build guide
+- [Railway System Guide](RAILWAY_SYSTEM_GUIDE.md) - Comprehensive technical documentation
+
+### Railway System Features
+
+- ✅ **AI-Powered Conflict Detection** - Automatically detects train conflicts
+- ✅ **Smart Optimization** - Optimizes train precedence and crossings
+- ✅ **What-If Simulation** - Test scenarios before implementation
+- ✅ **Real-Time Dashboard** - Monitor all trains and conflicts live
+- ✅ **Delay Impact Analysis** - Calculate cascading effects of delays
+- ✅ **Audit Trail** - Track all decisions and actions
+
+### Railway API Endpoints
+
+```
+Trains:     /api/railway/trains
+Sections:   /api/railway/sections
+Conflicts:  /api/railway/conflicts
+Optimize:   /api/railway/precedence/:sectionId
+Simulate:   /api/railway/simulation/run
+```
+
+---
+
 ## 🔧 Tech Stack
 
 - **Frontend:** EJS, EJS-Mate (Layouts & Partials)

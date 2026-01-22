@@ -28,6 +28,11 @@ const userRouter = require("./routes/user.js");
 const ownerDashboardRouter = require("./routes/ownerDashboard.js");
 const bookingRouter = require("./routes/booking.js");
 
+// Railway Management System Routes
+const trainRouter = require("./routes/train.js");
+const sectionRouter = require("./routes/section.js");
+const railwayRouter = require("./routes/railway.js");
+
 // ==================== DATABASE CONNECTION ====================
 main().then(() => {
     console.log("connection successful");
@@ -146,6 +151,11 @@ app.use("/", userRouter);
 app.use("/", verifyRouter);
 app.use("/", ownerRouter);    // Handles: /owner/login, /owner/signup    
 app.use("/", ownerDashboardRouter);
+
+// Railway Management System Routes
+app.use("/api/railway/trains", trainRouter);
+app.use("/api/railway/sections", sectionRouter);
+app.use("/api/railway", railwayRouter);
 
 // ==================== ERROR HANDLING MIDDLEWARE ====================
 app.all(/.*/, (req, res, next) => {

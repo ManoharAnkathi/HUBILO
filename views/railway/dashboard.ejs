@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Railway Traffic Management System - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1e3a8a;
+            --secondary-color: #3b82f6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+
+        body {
+            background-color: #f3f4f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .train-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .status-running { background-color: var(--success-color); color: white; }
+        .status-delayed { background-color: var(--warning-color); color: white; }
+        .status-halted { background-color: var(--danger-color); color: white; }
+        .status-scheduled { background-color: var(--secondary-color); color: white; }
+
+        .sidebar {
+            background-color: white;
+            min-height: calc(100vh - 150px);
+            box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-link {
+            color: #4b5563;
+            padding: 0.75rem 1rem;
+            margin: 0.25rem 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background-color: #f3f4f6;
+            color: var(--primary-color);
+        }
+
+        .nav-link.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .conflict-badge {
+            background-color: var(--danger-color);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="h2 mb-0"><i class="fas fa-train"></i> Railway Traffic Management System</h1>
+                    <p class="mb-0 mt-2">Intelligent Decision Support for Section Controllers</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="d-flex justify-content-end align-items-center">
+                        <div class="me-3">
+                            <small>Last Updated: <span id="lastUpdated"></span></small>
+                        </div>
+                        <button class="btn btn-light btn-sm" onclick="refreshDashboard()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2">
+                <div class="sidebar p-3">
+                    <nav class="nav flex-column">
+                        <a class="nav-link active" href="/railway/dashboard">
+                            <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                        </a>
+                        <a class="nav-link" href="/railway/trains">
+                            <i class="fas fa-train me-2"></i> Trains
+                        </a>
+                        <a class="nav-link" href="/railway/sections">
+                            <i class="fas fa-road me-2"></i> Sections
+                        </a>
+                        <a class="nav-link" href="/railway/conflicts">
+                            <i class="fas fa-exclamation-triangle me-2"></i> Conflicts
+                            <span class="conflict-badge ms-2" id="conflictCount">0</span>
+                        </a>
+                        <a class="nav-link" href="/railway/simulation">
+                            <i class="fas fa-flask me-2"></i> Simulation
+                        </a>
+                        <a class="nav-link" href="/railway/analytics">
+                            <i class="fas fa-chart-line me-2"></i> Analytics
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-10">
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="d-flex align-items-center">
+                                <div class="stat-icon" style="background-color: #dbeafe; color: var(--secondary-color);">
+                                    <i class="fas fa-train"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h6 class="text-muted mb-1">Active Trains</h6>
+                                    <h3 class="mb-0" id="activeTrains">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="d-flex align-items-center">
+                                <div class="stat-icon" style="background-color: #fef3c7; color: var(--warning-color);">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h6 class="text-muted mb-1">Delayed Trains</h6>
+                                    <h3 class="mb-0" id="delayedTrains">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="d-flex align-items-center">
+                                <div class="stat-icon" style="background-color: #fee2e2; color: var(--danger-color);">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h6 class="text-muted mb-1">Active Conflicts</h6>
+                                    <h3 class="mb-0" id="activeConflicts">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="d-flex align-items-center">
+                                <div class="stat-icon" style="background-color: #d1fae5; color: var(--success-color);">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h6 class="text-muted mb-1">On Time</h6>
+                                    <h3 class="mb-0" id="onTimeTrains">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Trains -->
+                <div class="section-card">
+                    <h5 class="mb-3"><i class="fas fa-train me-2"></i> Current Trains in Operation</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Train No.</th>
+                                    <th>Train Name</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Current Section</th>
+                                    <th>Delay</th>
+                                    <th>Priority</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="trainsTableBody">
+                                <tr>
+                                    <td colspan="8" class="text-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Active Conflicts -->
+                <div class="section-card">
+                    <h5 class="mb-3"><i class="fas fa-exclamation-triangle me-2"></i> Active Conflicts & AI Recommendations</h5>
+                    <div id="conflictsContainer">
+                        <div class="text-center py-3">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Update last updated time
+        function updateTime() {
+            document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // Fetch dashboard data
+        async function fetchDashboardData() {
+            try {
+                // Fetch trains
+                const trainsResponse = await fetch('/api/railway/trains');
+                const trainsData = await trainsResponse.json();
+                
+                if (trainsData.success) {
+                    updateStatistics(trainsData.data);
+                    updateTrainsTable(trainsData.data);
+                }
+
+                // Fetch conflicts
+                const conflictsResponse = await fetch('/api/railway/conflicts?status=DETECTED');
+                const conflictsData = await conflictsResponse.json();
+                
+                if (conflictsData.success) {
+                    updateConflicts(conflictsData.data);
+                }
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+            }
+        }
+
+        function updateStatistics(trains) {
+            const activeTrains = trains.filter(t => t.currentStatus === 'RUNNING').length;
+            const delayedTrains = trains.filter(t => t.delay.currentDelay > 0).length;
+            const onTimeTrains = trains.filter(t => t.currentStatus === 'RUNNING' && t.delay.currentDelay === 0).length;
+
+            document.getElementById('activeTrains').textContent = activeTrains;
+            document.getElementById('delayedTrains').textContent = delayedTrains;
+            document.getElementById('onTimeTrains').textContent = onTimeTrains;
+        }
+
+        function updateTrainsTable(trains) {
+            const tbody = document.getElementById('trainsTableBody');
+            tbody.innerHTML = '';
+
+            if (trains.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center">No trains currently in operation</td></tr>';
+                return;
+            }
+
+            trains.forEach(train => {
+                const row = `
+                    <tr>
+                        <td><strong>${train.trainNumber}</strong></td>
+                        <td>${train.trainName}</td>
+                        <td><span class="badge bg-secondary">${train.trainType}</span></td>
+                        <td><span class="train-status status-${train.currentStatus.toLowerCase()}">${train.currentStatus}</span></td>
+                        <td>${train.currentPosition?.sectionId?.sectionName || 'N/A'}</td>
+                        <td>${train.delay.currentDelay > 0 ? train.delay.currentDelay + ' min' : 'On Time'}</td>
+                        <td><span class="badge bg-primary">${train.priority}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="viewTrain('${train._id}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function updateConflicts(conflicts) {
+            document.getElementById('conflictCount').textContent = conflicts.length;
+            document.getElementById('activeConflicts').textContent = conflicts.length;
+
+            const container = document.getElementById('conflictsContainer');
+            container.innerHTML = '';
+
+            if (conflicts.length === 0) {
+                container.innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>No active conflicts detected</div>';
+                return;
+            }
+
+            conflicts.forEach(conflict => {
+                const severityClass = conflict.severity === 'HIGH' ? 'danger' : conflict.severity === 'MEDIUM' ? 'warning' : 'info';
+                const conflictCard = `
+                    <div class="alert alert-${severityClass} mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="alert-heading">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    ${conflict.conflictType} Conflict - ${conflict.severity} Severity
+                                </h6>
+                                <p class="mb-2">${conflict.description}</p>
+                                <small class="text-muted">
+                                    Trains Involved: ${conflict.trainsInvolved.map(t => t.trainNumber).join(', ')}
+                                </small>
+                            </div>
+                            <button class="btn btn-sm btn-light" onclick="viewConflict('${conflict._id}')">
+                                <i class="fas fa-eye"></i> View Details
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += conflictCard;
+            });
+        }
+
+        function refreshDashboard() {
+            fetchDashboardData();
+        }
+
+        function viewTrain(trainId) {
+            window.location.href = `/railway/trains/${trainId}`;
+        }
+
+        function viewConflict(conflictId) {
+            window.location.href = `/railway/conflicts/${conflictId}`;
+        }
+
+        // Initial load
+        fetchDashboardData();
+
+        // Auto-refresh every 30 seconds
+        setInterval(fetchDashboardData, 30000);
+    </script>
+</body>
+</html>
